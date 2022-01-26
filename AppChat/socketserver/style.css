@@ -1,0 +1,48 @@
+* {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+}
+.chat-container {
+  width: 100vw;
+  min-height: 400px;
+  display: flex;
+  border: 1px solid lightgrey;
+}
+
+.user-room-container {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-panel-container {
+  padding: 16px;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+}
+.user-room-container + .chat-panel-container {
+  border-left: 1px solid lightgrey;
+}
+
+label {
+  padding-bottom: 16px;
+  border-bottom: lightgrey 1px solid;
+}
+
+.room {
+  min-height: 35px;
+  padding: 16px 0;
+  border-collapse: collapse;
+  border-bottom: 1px lightgrey solid;
+}
+
+.room:hover {
+  cursor: pointer;
+  color: rgb(173, 173, 173);
+  transition: all linear 0.1s;
+}

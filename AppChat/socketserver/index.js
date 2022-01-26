@@ -12,37 +12,57 @@ server.listen(port, () => console.log('Server running in port ' + port));
 
 const users = [
   {
-    id: 1,
+    username: 'congvinh',
     name: 'Công Vinh',
+    rooms: ['congvinhthuytien', 'congvinhhoailinh'],
   },
   {
-    id: 2,
+    username: 'thuytien',
     name: 'Thủy Tiên',
+    rooms: ['congvinhthuytien'],
   },
   {
-    id: 3,
+    username: 'tranthanh',
     name: 'Trấn Thành',
+    rooms: [],
   },
   {
-    id: 4,
+    username: 'hoailinh',
     name: 'Hoài Linh',
+    rooms: ['congvinhhoailinh'],
   },
 ];
 
 const conversations = [
   {
-    name: '12',
-    member: [1, 2],
+    name: 'congvinhthuytien',
+    member: ['congvinh', 'thuytien'],
     messageData: [
       {
         time: Date.now(),
-        id: 1,
+        username: 'congvinh',
         message: 'Xin chào đây là Công Vinh',
       },
       {
         time: Date.now(),
-        id: 2,
+        username: 'thuytien',
         message: 'Xin chào đây là Thủy Tiên',
+      },
+    ],
+  },
+  {
+    name: 'congvinhhoailinh',
+    member: ['congvinh', 'hoailinh'],
+    messageData: [
+      {
+        time: Date.now(),
+        username: 'congvinh',
+        message: 'Xin chào đây là Công Vinh',
+      },
+      {
+        time: Date.now(),
+        username: 'hoailinh',
+        message: 'Xin chào đây là Hoài Linh',
       },
     ],
   },
@@ -52,8 +72,42 @@ io.on('connection', function (socket) {
   //Bắt sự kiện một client kết nối đến server
   console.log(`${socket.id} has connected`);
 
+  socket.on('start-connect', function (username) {
+    console.log(username, 'connect');
+
+    const existedUser = users.some((user) => {
+      return user.username === username;
+    });
+
+    if (existedUser) {
+      socket.on(`show-rooms-${username}`, function () {
+        const userRooms = [];
+        conversations.forEach((conversation) => {
+          if (conversation.member.includes(username)) {
+            userRooms.push(conversation.name);
+          }
+        });
+        socket.emit(`user-${username}-rooms`, userRooms);
+      });
+
+      socket.on(`get-${username}`, function (chatName) {
+        const res = conversations.find((conversation) => {
+          return conversation.name === chatName;
+        });
+
+        console.log(chatName);
+
+        if (res) {
+          socket.emit(`${username}-chat`, res);
+        }
+      });
+    } else {
+    }
+  });
+
   socket.on('all client', function (data) {
     //lắng nghe event 'all client'
+    console.log(data);
     io.sockets.emit('news', socket.id + ' send all client: ' + data); // gửi cho tất cả client
   });
 
@@ -65,11 +119,6 @@ io.on('connection', function (socket) {
   socket.on('private', function (data) {
     //lắng nghe event 'private'
     socket.emit('news', ' You send private message: ' + data); // chỉ gửi event cho client hiện tại
-  });
-
-  socket.on('plus-calculated', function (data) {
-    console.log(data);
-    io.sockets.emit('plus-calculated', data.a + data.b);
   });
 
   socket.on('disconnect', function () {

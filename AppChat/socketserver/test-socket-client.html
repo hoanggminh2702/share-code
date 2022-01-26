@@ -1,72 +1,93 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title of the document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Title of the document</title>
-    </head>
+  <body></body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script
+    src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+    integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
+    crossorigin="anonymous"
+  ></script>
 
-    <body>
-    </body>
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
-        integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
-        crossorigin="anonymous"></script>
-
-    <script>
-    var socket = io.connect('http://localhost:6969');// clent khởi tạo kết nối socket đến server
-    socket.on('news', function (data) { // lắng nghe event 'news' được server gửi đến
-    $('#chat-panel').append(data) // log data để kiểm tra
-        });
-
-        socket.on('plus-calculated', function(data) {
-            $('#result').html(`Kết quả: ${data}`)
-        })
-    $(document).ready(function () {
-        $('#send_private').click(function(){
-            socket.emit('private',  $('#data').val()); // gửi event 'private'
-             $('#data').val('');
-        });
-        $('#send_broadcast').click(function(){
-            socket.emit('broadcast',  $('#data').val()); // gửi event 'broadcast'
-            $('#data').val('');
-        });
-        $('#send_all_client').click(function(){
-            socket.emit('all client',  $('#data').val()); // gửi event 'all client'
-            $('#data').val('');
-        })
-
-        $('#plus').click(function() {
-            socket.emit('plus-calculated', {
-                a: Number($('#number-a').val()),
-                b: Number($('#number-b').val())
-            })
-
-            $('#number-a').val('')
-            $('#number-b').val('')
-        })
+  <script>
+    var currentUser = '';
+    var socket = io.connect('http://localhost:6969'); // clent khởi tạo kết nối socket đến server
+    socket.on('news', function (data) {
+      // lắng nghe event 'news' được server gửi đến
+      $('#chat-panel').append(data); // log data để kiểm tra
     });
-</script>
-    <h1>Test socket.io</h1>
-    <input type="text" id="data"><br>
-    <div>Khung chat</div>
-    <div id="chat-panel"></div>
-    <button id="send_private">Send Private message</button><br>
+
+    $(document).ready(function () {
+      // $('#send_private').click(function(){
+      //     socket.emit('private',  $('#data').val()); // gửi event 'private'
+      //      $('#data').val('');
+      // });
+      // $('#send_broadcast').click(function(){
+      //     socket.emit('broadcast',  $('#data').val()); // gửi event 'broadcast'
+      //     $('#data').val('');
+      // });
+      // $('#send_all_client').click(function(){
+      //     socket.emit('all client',  $('#data').val()); // gửi event 'all client'
+      //     $('#data').val('');
+      // })
+
+      $('#connect').click(function () {
+        socket.emit('start-connect', $('#data').val());
+        socket.emit(`show-rooms-${$('#data').val()}`, '');
+
+        currentUser = $('#data').val();
+
+        socket.on(`user-${$('#data').val()}-rooms`, function (data) {
+          $('#user-rooms').html('');
+          data.map((room, index) => {
+            $('#user-rooms').append(`<div id=${`room-${index}`} class="room">
+                    ${room}
+                </div>`);
+          });
+        });
+
+        $('#data').val('');
+      });
+
+      $('#user-rooms').click(function (e) {
+        socket.emit(`get-${currentUser}`, e.target.innerHTML.trim());
+        socket.on(`${currentUser}-chat`, function (data) {
+          $('#chat-panel').html(
+            data.messageData.map((data) => {
+              return `<div class="chat">${data.username}: ${data.message}</div>`;
+            })
+          );
+        });
+      });
+    });
+  </script>
+  <h1>Test socket.io</h1>
+  <div class="form-group">
+    <label for="username">Username: </label>
+    <input type="text" id="data" name="username" /><br />
+  </div>
+
+  <!-- <button id="send_private">Send Private message</button><br>
     <button id="send_broadcast">Send Broadcast</button><br>
-    <button id="send_all_client">Send All Client</button>
+    <button id="send_all_client">Send All Client</button> -->
+  <button id="connect">Connect</button>
 
-    <div id="calculate-box">
-        <input type="text" id="number-a">
-        <input type="text" id="number-b">
-        <button id="plus">Cộng</button>
-        <button id="minus">Trừ</button>
-
+  <div>Khung chat</div>
+  <div class="chat-container">
+    <div class="user-room-container">
+      <label for="user-room">Your rooms</label>
+      <div id="user-rooms"></div>
     </div>
-
-    <div>
-        <div id="result">
-
-        </div>
+    <div class="chat-panel-container">
+      <label for="chat-panel">Your Chat</label>
+      <div id="chat-panel">
+        <div class="chat"></div>
+      </div>
     </div>
+  </div>
 </html>

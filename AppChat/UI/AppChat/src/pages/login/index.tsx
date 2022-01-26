@@ -4,16 +4,12 @@ import './style.css';
 
 type LoginProps = {
   setLoginInfo: (data: LoginInfo) => void;
+  handleLogin: (username: string) => void;
 };
 
-const Login = ({ setLoginInfo }: LoginProps) => {
+const Login = ({ handleLogin, setLoginInfo }: LoginProps) => {
   const [username, setUsername] = useState<string>('');
-  const handleLogin = () => {
-    setLoginInfo({
-      username: username,
-      isLogin: true,
-    });
-  };
+
   return (
     <div id="login">
       <div className="form-login">
@@ -24,7 +20,7 @@ const Login = ({ setLoginInfo }: LoginProps) => {
             type="text"
             className="username"
           />
-          <button onClick={handleLogin} className="login-btn">
+          <button onClick={() => handleLogin(username)} className="login-btn">
             Đăng nhập
           </button>
         </div>

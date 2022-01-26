@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import './App.css';
+import Context from './context/Context';
 import ChatLayout from './layouts';
 import Login from './pages/login';
 import Screen from './pages/screen';
@@ -17,11 +18,24 @@ const App = (props: AppProps) => {
     isLogin: false,
   });
 
-  console.log(loginInfo.isLogin);
+  const socket = useContext(Context);
+
+  const handleLogin = (username: string) => {
+    setLoginInfo({
+      username: username,
+      isLogin: true,
+    });
+    socket.emit('all client', 'Hoàng Minh đã kết nối');
+  };
+
   return (
     <div>
       <ChatLayout loginInfo={loginInfo} setLoginInfo={setLoginInfo} />
-      {loginInfo.isLogin ? <Screen /> : <Login setLoginInfo={setLoginInfo} />}
+      {loginInfo.isLogin ? (
+        <Screen loginInfo={loginInfo} />
+      ) : (
+        <Login handleLogin={handleLogin} setLoginInfo={setLoginInfo} />
+      )}
     </div>
   );
 };
